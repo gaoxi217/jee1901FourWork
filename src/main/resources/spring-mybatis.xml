@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+	<context:component-scan base-package="com.qphone.service"></context:component-scan>
+	<!-- 引入数据库资源 -->
+	<context:property-placeholder location="classpath:mysql.properties"/>
+	
+	<!-- 配置连接池 -->
+	<bean class="com.alibaba.druid.pool.DruidDataSource" id="ds">
+		<property name="username" value="${user}"></property>
+		<property name="password" value="${pass}"></property>
+		<property name="url" value="${url}"></property>
+		<property name="driverClassName" value="${driver}"></property>
+		<property name="maxActive" value="${maxActive}"></property>
+	</bean>
+	
+	<!-- 配置SQL session factory bean关联映射文件 -->
+	<bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sf">
+		<property name="typeAliasesPackage" value="com.qphone.pojo"></property>
+		<property name="mapperLocations" value="classpath:com/qphone/dao/*.xml"></property>
+		<property name="dataSource" ref="ds"></property>
+		<property name="configLocation" value="classpath:mybatis-config.xml"></property>
+	</bean>
+	
+	<!-- mapper文件引入 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.qphone.dao"></property>
+		<property name="sqlSessionFactoryBeanName" value="sf"></property>
+	</bean>
+	
+	<bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager" id="dtx">
+	<property name="dataSource" ref="ds"></property>
+	</bean>
+	
+	<tx:advice id="tx" transaction-manager="dtx">
+		<!--定义属性，声明事务规则 -->
+		<tx:attributes>
+			<tx:method name="create*" propagation="REQUIRED" isolation="DEFAULT"
+				rollback-for="Exception" />
+			<tx:method name="insert*" propagation="REQUIRED" isolation="DEFAULT"
+				rollback-for="Exception" />
+			<tx:method name="add*" propagation="REQUIRED" isolation="DEFAULT"
+				rollback-for="Exception" />
+			<tx:method name="upd*" propagation="REQUIRED" isolation="DEFAULT"
+				rollback-for="Exception" />
+			<tx:method name="del*" propagation="REQUIRED" isolation="DEFAULT"
+				rollback-for="Exception" />
+			<tx:method name="execute*" propagation="REQUIRED"
+				isolation="DEFAULT" rollback-for="Exception" />
+			<tx:method name="do*" propagation="REQUIRED" isolation="DEFAULT"
+				rollback-for="Exception" />
+			<tx:method name="save*" propagation="REQUIRED" isolation="DEFAULT"
+				rollback-for="Exception" />
+			<tx:method name="set*" propagation="REQUIRED" isolation="DEFAULT"
+				rollback-for="Exception" />
+			<tx:method name="get*" propagation="SUPPORTS" isolation="DEFAULT"
+				read-only="true" />
+			<tx:method name="show*" propagation="SUPPORTS" isolation="DEFAULT"
+				read-only="true" />
+			<tx:method name="list*" propagation="SUPPORTS" isolation="DEFAULT"
+				read-only="true" />
+			<tx:method name="select*" propagation="SUPPORTS" isolation="DEFAULT"
+				read-only="true" />
+			<tx:method name="query*" propagation="SUPPORTS" isolation="DEFAULT"
+				read-only="true" />
+			<tx:method name="has*" propagation="SUPPORTS" isolation="DEFAULT"
+				read-only="true" />
+			<tx:method name="ntx*" propagation="NOT_SUPPORTED" />
+			<tx:method name="*" propagation="SUPPORTS" isolation="DEFAULT"
+				read-only="true" />
+		</tx:attributes>
+	</tx:advice>
+	
+	<aop:config>
+		<aop:pointcut expression="execution(* com.qphone.service.*.*(..))" id="mpc"/>
+		<aop:advisor advice-ref="tx" pointcut-ref="mpc"/>
+	</aop:config>
+</beans>
