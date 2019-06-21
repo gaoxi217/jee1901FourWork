@@ -14,5 +14,7 @@ public class SolrData implements Serializable{
 	private String image;
 	private String catName;
 	private String itemDesc;
+	
+	private String test;
 
 }
